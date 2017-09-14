@@ -2,32 +2,34 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.PublicKey;
 
-public class Client2 {
+public class Client2_201402029 {
 
     private static BufferedReader inputLine = null;
 
-    public Client2() {
+    public Client2_201402029() {
     }
 
     public static void main(String[] args) throws IOException {
         inputLine = new BufferedReader(new InputStreamReader(System.in));
 
-        Person bob = new Person();
+        DiffieHellman bob = new DiffieHellman();
         System.out.println("Generating Keys....");
-        bob.generateKeys();
         try {
             Registry registry = LocateRegistry.getRegistry("localhost");
-            Interface2 stub = (Interface2) registry.lookup("Server");
+            Interface2_201402029 stub = (Interface2_201402029) registry.lookup("Server");
             System.out.println("Sent Client Public Key to Server");
-            PublicKey AliceKey = stub.exchangePublicKey(bob.getPublicKey());
+            BigInteger g = stub.getG();
+            BigInteger p = stub.getP();
+            BigInteger Bmodulus = bob.generateKeys(g, p);
+            BigInteger Amodulus = stub.exchangePublicKey(Bmodulus);
             System.out.println("Received Public Key from Server");
-            byte[] secretKey = bob.generateCommonSecretKey(AliceKey);
+            BigInteger secretKey = bob.generateCommonSecretKey(Amodulus);
             System.out.println("Generated Secret Key");
             while (true) {
                 String input = inputLine.readLine().trim();
@@ -35,30 +37,37 @@ public class Client2 {
                     break;
                 }
                 String number = input.split(" ")[1];
-                byte[] encryptedNumber = bob.encrypt(number, secretKey);
+                String encryptedNumber = bob.encrypt(number);
                 if (input.startsWith("miller")) {
-                    byte[] response = stub.MillerRabin(encryptedNumber);
-                    String decryptedMessage = bob.decrypt(response, secretKey);
-                    System.out.println(decryptedMessage);
+                    String response = stub.MillerRabin(encryptedNumber);
+                    String decryptedMessage = bob.decrypt(response);
+                    if(decryptedMessage.equals("1"))
+                    {
+                        System.out.println("Prime");
+                    }
+                    else
+                    {
+                        System.out.println("Not Prime");
+                    }
                 }
                 if (input.startsWith("palindrome")) {
-                    byte[] response = stub.palindrome(encryptedNumber);
-                    String decryptedMessage = bob.decrypt(response, secretKey);
+                    String response = stub.palindrome(encryptedNumber);
+                    String decryptedMessage = bob.decrypt(response);
                     System.out.println(decryptedMessage);
                 }
                 if (input.startsWith("fibonacci")) {
-                    byte[] response = stub.fibonacci(encryptedNumber);
-                    String decryptedMessage = bob.decrypt(response, secretKey);
+                    String response = stub.fibonacci(encryptedNumber);
+                    String decryptedMessage = bob.decrypt(response);
                     System.out.println(decryptedMessage);
                 }
                 if (input.startsWith("utol")) {
-                    byte[] response = stub.utol(encryptedNumber);
-                    String decryptedMessage = bob.decrypt(response, secretKey);
+                    String response = stub.utol(encryptedNumber);
+                    String decryptedMessage = bob.decrypt(response);
                     System.out.println(decryptedMessage);
                 }
                 if (input.startsWith("ltou")) {
-                    byte[] response = stub.ltou(encryptedNumber);
-                    String decryptedMessage = bob.decrypt(response, secretKey);
+                    String response = stub.ltou(encryptedNumber);
+                    String decryptedMessage = bob.decrypt(response);
                     System.out.println(decryptedMessage);
                 }
             }

@@ -3,7 +3,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public interface ServerInterface extends Remote {
+public interface Interface1_201402029 extends Remote {
 
     String sayHello() throws RemoteException;
 
